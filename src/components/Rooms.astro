@@ -1,65 +1,56 @@
+---
+/* Galería de cabañas: mantiene la grilla de 5 imágenes (una alta a la izquierda,
+   dos a la derecha y dos abajo), pero ahora cada imagen es una cabaña real que
+   lleva a su propia página. Se alimenta de src/content/cabanas/. */
+import { cabanasActivas, imagenesDe, mxnCorto } from '../lib/cabanas';
+import { incluyeTodas } from '../data/propiedad';
+import { url } from '../lib/url';
+
+const cabanas = (await cabanasActivas()).slice(0, 5);
+const letras = ['a', 'b', 'c', 'd', 'e'];
+const sizes = [
+  '(max-width: 760px) 100vw, 60vw',
+  '(max-width: 760px) 100vw, 42vw',
+  '(max-width: 760px) 100vw, 42vw',
+  '(max-width: 760px) 100vw, 50vw',
+  '(max-width: 760px) 100vw, 50vw',
+];
+---
 <section id="rooms" class="section">
   <div class="rooms-head reveal">
     <div>
       <div class="kicker">Nuestras Cabañas</div>
       <h2 class="h2">Naturaleza y confort en la sierra.</h2>
     </div>
-    <p>Espacios rústicos pero equipados, pensados para que disfrutes del aire libre sin perder las comodidades básicas.</p>
+    <p>Espacios rústicos pero equipados, pensados para que disfrutes del aire libre sin perder las comodidades básicas. Entra a cada cabaña para ver todas sus fotos y detalles.</p>
   </div>
 
   <div class="gallery-custom">
-    <!-- Imagen 1: La grande y más alta -->
-    <figure class="tile tile--a force-dark reveal">
-      <img src="https://images.unsplash.com/photo-1731336478850-6bce7235e320?auto=format&fit=crop&w=1600&h=1068&q=75" srcset="https://images.unsplash.com/photo-1731336478850-6bce7235e320?auto=format&fit=crop&w=800&h=534&q=75 800w, https://images.unsplash.com/photo-1731336478850-6bce7235e320?auto=format&fit=crop&w=1200&h=801&q=75 1200w, https://images.unsplash.com/photo-1731336478850-6bce7235e320?auto=format&fit=crop&w=1600&h=1068&q=75 1600w" sizes="(max-width: 760px) 100vw, 60vw" alt="Interior de una cabaña rústica" width="1600" height="1068" loading="lazy">
-      <figcaption><span class="label">Descanso</span><strong>Espacios cómodos y limpios</strong></figcaption>
-    </figure>
-    
-    <!-- Imagen 2: Arriba a la derecha -->
-    <figure class="tile tile--b force-dark reveal">
-      <img src="https://images.unsplash.com/photo-1759038085950-1234ca8f5fed?auto=format&fit=crop&w=1600&h=1068&q=75" srcset="https://images.unsplash.com/photo-1759038085950-1234ca8f5fed?auto=format&fit=crop&w=800&h=534&q=75 800w, https://images.unsplash.com/photo-1759038085950-1234ca8f5fed?auto=format&fit=crop&w=1200&h=801&q=75 1200w, https://images.unsplash.com/photo-1759038085950-1234ca8f5fed?auto=format&fit=crop&w=1600&h=1068&q=75 1600w" sizes="(max-width: 760px) 100vw, 42vw" alt="Cocina rústica equipada" width="1600" height="1068" loading="lazy">
-      <figcaption><span class="label">Equipamiento</span><strong>Todo lo básico para cocinar</strong></figcaption>
-    </figure>
-    
-    <!-- Imagen 3: Medio a la derecha -->
-    <figure class="tile tile--c force-dark reveal">
-      <img src="https://images.unsplash.com/photo-1631773022853-905dfbd2cdf8?auto=format&fit=crop&w=1600&h=1068&q=75" srcset="https://images.unsplash.com/photo-1631773022853-905dfbd2cdf8?auto=format&fit=crop&w=800&h=534&q=75 800w, https://images.unsplash.com/photo-1631773022853-905dfbd2cdf8?auto=format&fit=crop&w=1200&h=801&q=75 1200w, https://images.unsplash.com/photo-1631773022853-905dfbd2cdf8?auto=format&fit=crop&w=1600&h=1068&q=75 1600w" sizes="(max-width: 760px) 100vw, 42vw" alt="Baño de cabaña" width="1600" height="1068" loading="lazy">
-      <figcaption><span class="label">Servicios</span><strong>Baños con agua caliente</strong></figcaption>
-    </figure>
-    
-    <!-- Imagen 4: Abajo a la izquierda -->
-    <figure class="tile tile--d force-dark reveal">
-      <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1600&h=1068&q=75" srcset="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=800&h=534&q=75 800w, https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1200&h=801&q=75 1200w, https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1600&h=1068&q=75 1600w" sizes="(max-width: 760px) 100vw, 50vw" alt="Área común exterior" width="1600" height="1068" loading="lazy">
-      <figcaption><span class="label">Exteriores</span><strong>Espacios para compartir</strong></figcaption>
-    </figure>
-
-    <!-- Imagen 5: Abajo a la derecha -->
-    <figure class="tile tile--e force-dark reveal">
-      <img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=1600&h=1068&q=75" srcset="https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=800&h=534&q=75 800w, https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=1200&h=801&q=75 1200w, https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=1600&h=1068&q=75 1600w" sizes="(max-width: 760px) 100vw, 50vw" alt="Vista al bosque" width="1600" height="1068" loading="lazy">
-      <figcaption><span class="label">Entorno</span><strong>Desconexión total</strong></figcaption>
-    </figure>
+    {cabanas.map((c, i) => {
+      const foto = imagenesDe(c)[0];
+      return (
+        <figure class={`tile tile--${letras[i]} force-dark reveal`}>
+          <img src={foto.src} alt={foto.alt} width="1600" height="1068" sizes={sizes[i]} loading="lazy">
+          <a class="tile__link" href={url(`cabanas/${c.id}/`)} aria-label={`Ver ${c.data.nombre}`}></a>
+          <figcaption>
+            <span class="label">Hasta {c.data.capacidadMax} personas</span>
+            <strong>{c.data.nombre}</strong>
+            <span class="tile__meta">1 noche {mxnCorto(c.data.precio1Noche)} · 2 noches {mxnCorto(c.data.precio2Noches)}</span>
+            <span class="tile__go">Ver cabaña <i class="ph ph-arrow-right" aria-hidden="true"></i></span>
+          </figcaption>
+        </figure>
+      );
+    })}
   </div>
 
   <div class="amenities">
-    <div class="amenity reveal">
-      <div class="icon-tile"><i class="ph ph-coffee" aria-hidden="true"></i></div>
-      <h3>Cocina equipada</h3>
-      <p>Utensilios básicos en todas las cabañas.</p>
-    </div>
-    <div class="amenity reveal">
-      <div class="icon-tile"><i class="ph ph-wifi-high" aria-hidden="true"></i></div>
-      <h3>WiFi (costo extra)</h3>
-      <p>Consultá por la disponibilidad del servicio.</p>
-    </div>
-    <div class="amenity reveal">
-      <div class="icon-tile"><i class="ph ph-fire" aria-hidden="true"></i></div>
-      <h3>Asador y fogatero</h3>
-      <p>Para disfrutar las noches al aire libre.</p>
-    </div>
-    <div class="amenity reveal">
-      <div class="icon-tile"><i class="ph ph-tag" aria-hidden="true"></i></div>
-      <h3>Reserva directa</h3>
-      <p>Sin intermediarios, atención personalizada.</p>
-    </div>
+    {incluyeTodas.map((a) => (
+      <div class="amenity reveal">
+        <div class="icon-tile"><i class={`ph ph-${a.icono}`} aria-hidden="true"></i></div>
+        <h3>{a.titulo}</h3>
+        <p>{a.texto}</p>
+      </div>
+    ))}
   </div>
 </section>
 
@@ -133,4 +124,11 @@
     }
     .tile--a { min-height: 350px; }
   }
+
+  /* Cada imagen es un enlace a la página de la cabaña */
+  .tile__link { position: absolute; inset: 0; z-index: 2; }
+  .tile figcaption { z-index: 1; }
+  .tile__meta { font-size: 12px; color: rgba(var(--ink-rgb), .78); font-weight: 400; }
+  .tile__go { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--kicker2); transition: gap .2s; }
+  .tile:hover .tile__go { gap: 10px; }
 </style>

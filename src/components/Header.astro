@@ -1,23 +1,24 @@
 ---
 import { site } from '../config';
-import Emblem from './Emblem.astro';
+import { url } from '../lib/url';
+
+const home = url();
 
 const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('¡Hola! Quiero consultar por disponibilidad en Cabañas Matilde.')}`;
 ---
 <header class="site-header">
   <nav class="nav" aria-label="Main">
-    <a href="#top" class="brand" aria-label={`${site.name}, volver arriba`}>
-      <Emblem />
-      <span class="brand__name">{site.name.toUpperCase()}</span>
+    <a href={`${home}#top`} class="brand" aria-label={`${site.name}, volver arriba`}>
+      <img class="brand__logo" src={url('images/logo.png')} alt={site.name} width="86" height="44">
       <span class="brand__place">{site.place.toUpperCase()}</span>
     </a>
 
     <!-- Enlaces de navegación (Solo Escritorio) -->
     <div class="nav__links" id="navLinks">
-      <a href="#rooms">Cabañas</a>
-      <a href="#location">Ubicación</a>
-      <a href="#direct">Reserva directa</a>
-      <a href="#stories">Huéspedes</a>
+      <a href={`${home}#rooms`}>Cabañas</a>
+      <a href={`${home}#location`}>Ubicación</a>
+      <a href={`${home}#direct`}>Reserva directa</a>
+      <a href={`${home}#stories`}>Huéspedes</a>
     </div>
 
     <button class="theme-toggle" type="button" id="themeToggle" aria-label="Cambiar modo claro/oscuro">
@@ -42,6 +43,9 @@ const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('�
 </a>
 
 <style>
+  .brand__logo { height: 44px; width: auto; display: block; }
+  @media (max-width: 560px) { .brand__logo { height: 38px; } }
+
   /* =========================================================
      ESTILOS DEL BOTÓN VERDE ESCRITORIO
      ========================================================= */

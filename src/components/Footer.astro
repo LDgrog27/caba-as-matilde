@@ -1,6 +1,9 @@
 ---
 import { site } from '../config';
-import Emblem from './Emblem.astro';
+import { url } from '../lib/url';
+import { mapaUrl } from '../config';
+
+const home = url();
 
 const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('¡Hola! Quiero consultar por disponibilidad en Cabañas Matilde.')}`;
 ---
@@ -9,16 +12,18 @@ const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('�
     
     <!-- Columna 1: Logo y descripción -->
     <div class="footer__col">
-      <Emblem size="footer" />
+      <img class="footer__logo" src={url('images/logo.png')} alt={site.name} width="130" height="67" loading="lazy">
       <p>Un refugio familiar en {site.place}, {site.city}.</p>
     </div>
 
     <!-- Columna 2: Navegación -->
     <div class="footer__col">
       <span class="label">Explorar</span>
-      <a href="#rooms">Cabañas</a>
-      <a href="#location">Ubicación</a>
-      <a href="#direct">Reserva directa</a>
+      <a href={`${home}#rooms`}>Cabañas</a>
+      <a href={`${home}#location`}>Ubicación</a>
+      <a href={`${home}#direct`}>Reserva directa</a>
+      <a href={`${home}#stories`}>Huéspedes</a>
+      <a href={mapaUrl} target="_blank" rel="noopener">Ver en Google Maps</a>
     </div>
 
     <!-- Columna 3: Horarios -->
@@ -47,6 +52,8 @@ const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('�
 </footer>
 
 <style>
+  .footer__logo { width: 130px; height: auto; display: block; margin-bottom: 4px; }
+
   /* 1. Forzamos al contenedor del copyright a comportarse como una fila ordenada */
   .footer__copy {
     display: flex !important;

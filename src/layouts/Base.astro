@@ -1,20 +1,27 @@
 ---
 import { site } from '../config';
+import { url } from '../lib/url';
+import { adelantoPct, horarios } from '../data/propiedad';
 import '../styles/styles.css';
+
+interface Props { title?: string; description?: string; image?: string }
+const { title = site.title, description = site.description, image = site.ogImage } = Astro.props;
+// Acepta una URL completa o una ruta dentro de /public
+const ogImage = /^https?:/.test(image) ? image : new URL(url(image), Astro.site ?? 'https://example.com').href;
 ---
 <!doctype html>
 <html lang={site.lang}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{site.title}</title>
-  <meta name="description" content={site.description}>
+  <title>{title}</title>
+  <meta name="description" content={description}>
   <meta name="theme-color" content="#140c0e">
   <meta name="generator" content={Astro.generator}>
-  <meta property="og:title" content={site.title}>
-  <meta property="og:description" content={site.description}>
-  <meta property="og:image" content={site.ogImage}>
-  <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL.replace(/\/?$/, '/')}favicon.svg`}>
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:image" content={ogImage}>
+  <link rel="icon" type="image/svg+xml" href={url('favicon.svg')}>
 
   <!-- Apply the saved theme before first paint, so the page never flashes the wrong theme -->
   <script is:inline>
@@ -33,7 +40,7 @@ import '../styles/styles.css';
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
-<body data-tz={site.timeZone} data-locale={site.locale} data-lat={site.latitude} data-lon={site.longitude}>
+<body data-tz={site.timeZone} data-locale={site.locale} data-lat={site.latitude} data-lon={site.longitude} data-wa={site.whatsappNumber} data-deposit={adelantoPct} data-checkin={horarios.llegada} data-checkout={horarios.salida}>
 <slot />
 <script>
   import '../scripts/main.js';

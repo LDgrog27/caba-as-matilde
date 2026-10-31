@@ -1,0 +1,188 @@
+---
+/**
+ * Carrusel automático de imágenes con el mismo aspecto del hero.
+ * - Cambia solo cada `intervalo` ms; se detiene al pasar el mouse, al enfocar un control,
+ *   al ocultar la pestaña y si el visitante prefiere menos movimiento.
+ * - Flechas, puntos, botón de pausa, teclado (← →) y deslizar con el dedo.
+ * El contenido del <slot> se dibuja encima (título, botones, etc.).
+ */
+interface Props {
+  imagenes: { src: string; alt: string }[];
+  intervalo?: number;
+  etiqueta?: string;
+}
+const { imagenes, intervalo = 5000, etiqueta = 'Fotos de la cabaña' } = Astro.props;
+const varias = imagenes.length > 1;
+---
+<div
+  class="hero carousel force-dark"
+  data-carousel
+  data-interval={intervalo}
+  role="region"
+  aria-roledescription="carrusel"
+  aria-label={etiqueta}
+  tabindex="-1"
+>
+  <div class="carousel__track">
+    {imagenes.map((im, i) => (
+      <div
+        class:list={['carousel__slide', { 'is-active': i === 0 }]}
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label={`${i + 1} de ${imagenes.length}`}
+        aria-hidden={i === 0 ? 'false' : 'true'}
+      >
+        <img src={im.src} alt={im.alt} width="1600" height="1068" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} draggable="false">
+      </div>
+    ))}
+  </div>
+  <div class="hero__shade"></div>
+
+  <slot />
+
+  {varias && (
+    <div class="carousel__ui">
+      <div class="carousel__dots" role="group" aria-label="Elegir foto">
+        {imagenes.map((_, i) => (
+          <button type="button" class:list={['carousel__dot', { 'is-active': i === 0 }]} data-go={i} aria-label={`Ver foto ${i + 1}`} aria-current={i === 0 ? 'true' : 'false'}></button>
+        ))}
+      </div>
+      <div class="carousel__btns">
+        <span class="carousel__count" data-count aria-hidden="true">1 / {imagenes.length}</span>
+        <button type="button" class="round-btn carousel__btn" data-pause aria-label="Pausar el carrusel"><i class="ph ph-pause" aria-hidden="true"></i></button>
+        <button type="button" class="round-btn carousel__btn" data-prev aria-label="Foto anterior"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+        <button type="button" class="round-btn carousel__btn" data-next aria-label="Foto siguiente"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  )}
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
+    const slides = Array.from(root.querySelectorAll<HTMLElement>('.carousel__slide'));
+    if (slides.length < 2) return;
+    const dots = Array.from(root.querySelectorAll<HTMLElement>('.carousel__dot'));
+    const count = root.querySelector<HTMLElement>('[data-count]');
+    const pauseBtn = root.querySelector<HTMLButtonElement>('[data-pause]');
+    const interval = Number(root.dataset.interval) || 5000;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    root.style.setProperty('--interval', interval + 'ms');
+
+    let i = 0;
+    let timer: number | undefined;
+    let userPaused = reduce;      // con "menos movimiento" arranca en pausa
+    let hovering = false;
+
+    function go(n: number) {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, k) => {
+        s.classList.toggle('is-active', k === i);
+        s.setAttribute('aria-hidden', String(k !== i));
+      });
+      dots.forEach((d, k) => {
+        d.classList.toggle('is-active', k === i);
+        d.setAttribute('aria-current', String(k === i));
+      });
+      if (count) count.textContent = `${i + 1} / ${slides.length}`;
+      schedule();
+    }
+    function running() { return !userPaused && !hovering && !document.hidden; }
+    function schedule() {
+      window.clearTimeout(timer);
+      root.classList.toggle('is-paused', !running());
+      if (running()) timer = window.setTimeout(() => go(i + 1), interval);
+    }
+    function syncPauseBtn() {
+      if (!pauseBtn) return;
+      pauseBtn.innerHTML = `<i class="ph ph-${userPaused ? 'play' : 'pause'}" aria-hidden="true"></i>`;
+      pauseBtn.setAttribute('aria-label', userPaused ? 'Reanudar el carrusel' : 'Pausar el carrusel');
+    }
+
+    root.querySelector('[data-prev]')?.addEventListener('click', () => go(i - 1));
+    root.querySelector('[data-next]')?.addEventListener('click', () => go(i + 1));
+    dots.forEach((d) => d.addEventListener('click', () => go(Number(d.dataset.go))));
+    pauseBtn?.addEventListener('click', () => { userPaused = !userPaused; syncPauseBtn(); schedule(); });
+
+    root.addEventListener('mouseenter', () => { hovering = true; schedule(); });
+    root.addEventListener('mouseleave', () => { hovering = false; schedule(); });
+    root.addEventListener('focusin', () => { hovering = true; schedule(); });
+    root.addEventListener('focusout', () => { hovering = false; schedule(); });
+    document.addEventListener('visibilitychange', schedule);
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(i - 1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(i + 1); }
+    });
+
+    // Deslizar con el dedo
+    let startX = 0, startY = 0, tracking = false;
+    root.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' || (e.target as HTMLElement).closest('a,button')) return;
+      tracking = true; startX = e.clientX; startY = e.clientY;
+    });
+    root.addEventListener('pointerup', (e) => {
+      if (!tracking) return;
+      tracking = false;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(i + (dx < 0 ? 1 : -1));
+    });
+    root.addEventListener('pointercancel', () => { tracking = false; });
+
+    syncPauseBtn();
+    schedule();
+  });
+</script>
+
+<style>
+  .carousel { min-height: clamp(520px, 78vh, 760px); }
+  .carousel__track { position: absolute; inset: 0; }
+  .carousel__slide {
+    position: absolute; inset: 0;
+    opacity: 0; visibility: hidden;
+    transition: opacity .9s ease, visibility 0s linear .9s;
+  }
+  .carousel__slide.is-active { opacity: 1; visibility: visible; transition: opacity .9s ease; }
+  .carousel__slide img { width: 100%; height: 100%; object-fit: cover; }
+  .carousel__slide.is-active img { animation: carousel-zoom 9s ease-out both; }
+  @keyframes carousel-zoom { from { transform: scale(1.06); } to { transform: scale(1); } }
+
+  /* Controles: abajo a la derecha, por encima del degradado */
+  .carousel__ui {
+    position: absolute; z-index: 3; left: clamp(20px, 4vw, 56px); right: clamp(20px, 4vw, 56px); bottom: 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    pointer-events: none;
+  }
+  .carousel__ui > * { pointer-events: auto; }
+  .carousel__dots { display: flex; gap: 8px; align-items: center; }
+  .carousel__dot {
+    position: relative; width: 34px; height: 4px; padding: 0; border: 0; border-radius: 4px; cursor: pointer;
+    background: rgba(var(--ink-rgb), .3); overflow: hidden;
+  }
+  .carousel__dot::before { content: ""; position: absolute; inset: -10px 0; } /* zona de toque más grande */
+  .carousel__dot::after {
+    content: ""; position: absolute; inset: 0; transform-origin: left; transform: scaleX(0);
+    background: var(--ink);
+  }
+  .carousel__dot.is-active::after { animation: carousel-fill var(--interval, 5000ms) linear forwards; }
+  .carousel.is-paused .carousel__dot.is-active::after { animation-play-state: paused; }
+  @keyframes carousel-fill { to { transform: scaleX(1); } }
+  .carousel__btns { display: flex; align-items: center; gap: 8px; }
+  .carousel__count { font-size: 12px; letter-spacing: .12em; color: rgba(var(--ink-rgb), .75); margin-right: 6px; font-variant-numeric: tabular-nums; }
+  .carousel__btn {
+    width: 40px; height: 40px;
+    background: rgba(20, 12, 14, .35); border-color: rgba(var(--ink-rgb), .3);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* El contenido del hero deja sitio a los controles */
+  .carousel :global(.hero__content) { padding-bottom: 96px; z-index: 2; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .carousel__slide { transition: none; }
+    .carousel__slide.is-active img { animation: none; }
+    .carousel__dot.is-active::after { animation: none; transform: scaleX(1); }
+  }
+  @media (max-width: 560px) {
+    .carousel__count { display: none; }
+    .carousel__dot { width: 22px; }
+  }
+</style>

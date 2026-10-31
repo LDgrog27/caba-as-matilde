@@ -1,5 +1,8 @@
 ---
 nombre: "Casa Águila"
+orden: 1
+resumen: "La más grande: hasta 14 personas, con asador y fogatero."
+titular: "La casa donde cabe toda la familia."
 capacidadMax: 14
 precio1Noche: 4000
 precio2Noches: 7500
@@ -36,3 +39,9 @@ reglamento:
 admiteMascotas: true
 activa: true
 ---
+
+Casa Águila es la más grande de Cabañas Matilde: tiene espacio para hasta **14 personas**, así que cabe toda la familia, o todo el grupo, sin que nadie se quede fuera.
+
+Cuenta con **tres recámaras** (dos arriba y una abajo) con camas matrimoniales e individuales, una **cocina equipada** para preparar las comidas del fin de semana, **baño interior con agua caliente** y un baño exterior para cuando todos andan afuera.
+
+Y afuera está lo mejor: el **asador y el fogatero** para armar la parrillada y alargar la sobremesa bajo el cielo de la sierra.

@@ -1,41 +1,46 @@
 ---
-// No se necesitan imports adicionales para esta sección
+/* Reseñas de huéspedes (mismo diseño de siempre). Los datos están en src/data/testimonios.ts.
+   Con la prop `cabana` muestra solo las de esa cabaña y se oculta si no hay ninguna.
+   Si todavía no hay reseñas reales, la portada muestra una invitación para dejar una. */
+import { reseñasVisibles } from '../data/testimonios';
+import { site } from '../config';
+
+interface Props { cabana?: string }
+const { cabana } = Astro.props;
+const lista = reseñasVisibles(cabana);
+const invitar = !cabana && lista.length === 0;
+const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('¡Hola! Ya me hospedé en Cabañas Matilde y me gustaría dejar mi reseña.')}`;
 ---
-<section id="stories" class="section">
-  <div class="section-head reveal">
-    <div class="kicker">Lo que dicen nuestros huéspedes</div>
-    <h2 class="h2">Experiencias que se repiten.</h2>
-  </div>
-  <div class="stories">
-    <figure class="story reveal">
-      <div>
-        <span class="tag">Escapada familiar</span>
-        <blockquote>“La cabaña tenía todo lo necesario y el entorno es increíble. Los chicos no querían irse. Reservar por WhatsApp fue súper rápido.”</blockquote>
-      </div>
-      <figcaption>
-        <div class="avatar" aria-hidden="true">M</div>
-        <div><strong>Mariana G.</strong><span>Viajó en familia desde Monterrey</span></div>
-      </figcaption>
-    </figure>
-    <figure class="story reveal">
-      <div>
-        <span class="tag">Fin de semana con amigos</span>
-        <blockquote>“El asador y el fogatero fueron el centro de la reunión. La atención de los dueños fue de diez, siempre pendientes de que no nos faltara nada.”</blockquote>
-      </div>
-      <figcaption>
-        <div class="avatar" aria-hidden="true">C</div>
-        <div><strong>Carlos y amigos</strong><span>Grupo de 10 personas</span></div>
-      </figcaption>
-    </figure>
-    <figure class="story reveal">
-      <div>
-        <span class="tag">Desconexión total</span>
-        <blockquote>“Buscábamos silencio y naturaleza, y lo encontramos. La cabaña es rústica y acogedora. El proceso de reserva directa fue muy transparente.”</blockquote>
-      </div>
-      <figcaption>
-        <div class="avatar" aria-hidden="true">L</div>
-        <div><strong>Laura M.</strong><span>Pareja, desde Saltillo</span></div>
-      </figcaption>
-    </figure>
-  </div>
-</section>
+{(lista.length > 0 || invitar) && (
+  <section id={cabana ? undefined : 'stories'} class="section">
+    <div class="section-head reveal">
+      <div class="kicker">{cabana ? 'Reseñas de esta cabaña' : 'Lo que dicen nuestros huéspedes'}</div>
+      <h2 class="h2">{cabana ? 'Lo que cuentan quienes se hospedaron aquí.' : 'Experiencias que se repiten.'}</h2>
+    </div>
+    <div class="stories">
+      {lista.map((t) => (
+        <figure class="story reveal">
+          <div>
+            <span class="tag">{t.ejemplo ? 'EJEMPLO · ' : ''}{t.tipo}</span>
+            <blockquote>“{t.texto}”</blockquote>
+          </div>
+          <figcaption>
+            <div class="avatar" aria-hidden="true">{t.autor.charAt(0)}</div>
+            <div><strong>{t.autor}</strong><span>{t.detalle}</span></div>
+          </figcaption>
+        </figure>
+      ))}
+      {invitar && (
+        <figure class="story reveal">
+          <div>
+            <span class="tag">Tu opinión cuenta</span>
+            <blockquote>¿Ya nos visitaste? Cuéntanos cómo fue tu experiencia y súmala aquí para quienes están eligiendo su próxima escapada.</blockquote>
+          </div>
+          <figcaption>
+            <a class="btn btn--outline" href={waUrl} target="_blank" rel="noopener">Dejar mi reseña <i class="ph ph-chat-circle" aria-hidden="true"></i></a>
+          </figcaption>
+        </figure>
+      )}
+    </div>
+  </section>
+)}

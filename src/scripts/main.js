@@ -1,3 +1,5 @@
+import { cotizar, mxn } from '../lib/cotizar.js';
+
 (function () {
   'use strict';
 
@@ -52,6 +54,28 @@
   };
   var LIMITS = { adults: [1, 14], children: [0, 10] };
 
+  /* ---------- Aparición al hacer scroll y año (corre en todas las páginas) ---------- */
+  (function initPage() {
+  var reveals = $$('.reveal');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var el = en.target;
+        var sibs = $$('.reveal', el.parentElement);
+        el.style.transitionDelay = Math.min(sibs.indexOf(el), 4) * 70 + 'ms';
+        el.classList.add('is-in');
+        io.unobserve(el);
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    reveals.forEach(function (el) { io.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add('is-in'); });
+  }
+
+  if($('#year')) $('#year').textContent = new Date().getFullYear();
+  })();
+
   var form = $('#book');
   if(!form) return; 
 
@@ -65,32 +89,46 @@
   var same = function (a, b) { return a && b && a.getTime() === b.getTime(); };
   var nights = function () { return S.checkIn && S.checkOut ? Math.round((S.checkOut - S.checkIn) / 864e5) : 0; };
 
+  var DEPOSIT = parseInt(document.body.dataset.deposit, 10) || 30;
+
+  // Datos de la cabaña elegida (vienen de src/content/cabanas vía el <select> oculto)
+  function selectedCabin() {
+    var select = document.getElementById('cabinSelect');
+    var o = select && select.options[select.selectedIndex];
+    if (!o) return null;
+    return {
+      name: o.getAttribute('data-name'),
+      cap: parseInt(o.getAttribute('data-cap'), 10) || Infinity,
+      pets: o.getAttribute('data-pets') !== '0',
+      precios: {
+        precio1: parseInt(o.getAttribute('data-price1'), 10),
+        precio2: parseInt(o.getAttribute('data-price2'), 10),
+        precioExtra: parseInt(o.getAttribute('data-pricex'), 10)
+      }
+    };
+  }
+
+  // Devuelve un aviso si el grupo no cabe o la cabaña no admite mascotas; '' si todo bien
+  function problema(c) {
+    var g = S.adults + S.children;
+    if (g > c.cap) return 'Esta cabaña admite hasta ' + c.cap + ' personas (elegiste ' + g + '). Elige otra cabaña o reduce el grupo.';
+    if (S.pets && !c.pets) return 'Esta cabaña no admite mascotas.';
+    return '';
+  }
+
   function updatePrice() {
     var priceDisplay = $('#livePriceDisplay');
-    var totalEl = $('#totalPrice');
-    var depositEl = $('#depositPrice');
-    var select = document.getElementById('cabinSelect');
-    
-    if (!priceDisplay || !select) return;
+    var cabin = selectedCabin();
+    if (!priceDisplay || !cabin) return;
 
-    var nt = nights();
-    if (nt === 0) {
-      priceDisplay.style.display = 'none';
-      return;
-    }
+    var q = cotizar(cabin.precios, nights(), DEPOSIT);
+    if (!q) { priceDisplay.style.display = 'none'; return; }
 
-    var selectedOption = select.options[select.selectedIndex];
-    var p1 = parseInt(selectedOption.getAttribute('data-price1'));
-    var p2 = parseInt(selectedOption.getAttribute('data-price2'));
-    var px = parseInt(selectedOption.getAttribute('data-pricex'));
-
-    var precioBase = nt === 1 ? p1 : p2;
-    var nocheExtra = nt > 2 ? (nt - 2) * px : 0;
-    var total = precioBase + nocheExtra;
-    var adelanto = total * 0.30;
-
-    totalEl.textContent = `$${total.toLocaleString('es-MX')} MXN`;
-    depositEl.textContent = `$${adelanto.toLocaleString('es-MX')} MXN`;
+    $('#totalPrice').textContent = mxn(q.total);
+    $('#depositPrice').textContent = mxn(q.adelanto);
+    var pct = $('#depositPct'); if (pct) pct.textContent = DEPOSIT;
+    var warn = $('#capWarn'), msg = problema(cabin);
+    if (warn) { warn.textContent = msg; warn.hidden = !msg; }
     priceDisplay.style.display = 'flex';
   }
 
@@ -316,30 +354,23 @@
     setOpen(null);
 
     var nt = nights();
-    
-    var select = document.getElementById('cabinSelect');
-    var selectedOption = select.options[select.selectedIndex];
-    var nombreCabana = selectedOption.getAttribute('data-name');
-    var p1 = parseInt(selectedOption.getAttribute('data-price1'));
-    var p2 = parseInt(selectedOption.getAttribute('data-price2'));
-    var px = parseInt(selectedOption.getAttribute('data-pricex'));
+    var cabin = selectedCabin();
+    var aviso = problema(cabin);
+    if (aviso) { showToast(aviso); return; }
 
-    var precioBase = nt === 1 ? p1 : p2;
-    var nocheExtra = nt > 2 ? (nt - 2) * px : 0;
-    var total = precioBase + nocheExtra;
-    var adelanto = total * 0.30;
-    
-    var telefono = "528125800115"; 
+    var q = cotizar(cabin.precios, nt, DEPOSIT);
+    var d = document.body.dataset;
+    var telefono = d.wa;
     var mensaje = `¡Hola! Quiero reservar en Cabañas Matilde 🏡\n\n` +
-      `• Cabaña: ${nombreCabana}\n` +
-      `• Llegada: ${fmt(S.checkIn)} (Check-in 10:00 AM)\n` +
-      `• Salida: ${fmt(S.checkOut)} (Check-out 1:00 PM)\n` +
+      `• Cabaña: ${cabin.name}\n` +
+      `• Llegada: ${fmt(S.checkIn)} (Check-in ${d.checkin})\n` +
+      `• Salida: ${fmt(S.checkOut)} (Check-out ${d.checkout})\n` +
       `• Noches: ${nt}\n` +
       `• Huéspedes: ${S.adults} adultos` + (S.children ? `, ${S.children} niños` : '') + `\n` +
       `• Mascotas: ${S.pets ? 'Sí' : 'No'}\n\n` +
-      `• Total Estimado: $${total.toLocaleString('es-MX')} MXN\n` +
-      `• Adelanto requerido (30%): $${adelanto.toLocaleString('es-MX')} MXN\n\n` +
-      `Mi nombre: [Escribí tu nombre aquí]\n\n` +
+      `• Total Estimado: ${mxn(q.total)}\n` +
+      `• Adelanto requerido (${DEPOSIT}%): ${mxn(q.adelanto)}\n\n` +
+      `Mi nombre: [Escribe tu nombre aquí]\n\n` +
       `Quedo atento a la confirmación y a los datos para enviar el adelanto. ¡Gracias!`;
 
     var url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
@@ -347,23 +378,19 @@
     window.open(url, '_blank');
   });
 
-  /* ---------- Reveal on scroll ---------- */
-  var reveals = $$('.reveal');
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        var el = en.target;
-        var sibs = $$('.reveal', el.parentElement);
-        el.style.transitionDelay = Math.min(sibs.indexOf(el), 4) * 70 + 'ms';
-        el.classList.add('is-in');
-        io.unobserve(el);
-      });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-    reveals.forEach(function (el) { io.observe(el); });
-  } else {
-    reveals.forEach(function (el) { el.classList.add('is-in'); });
-  }
 
-  if($('#year')) $('#year').textContent = new Date().getFullYear();
+  /* ---------- Cabaña preseleccionada desde otra página (/?cabana=casa-oso#book) ---------- */
+  function setCabin(value) {
+    var select = document.getElementById('cabinSelect');
+    if (!select) return;
+    var opt = Array.prototype.find.call(select.options, function (o) { return o.value === value; });
+    if (!opt) return;
+    select.value = value;
+    S.cabin = opt.getAttribute('data-name');
+    $$('.cabin-option', cabinPop).forEach(function (o) { o.classList.toggle('is-selected', o.getAttribute('data-value') === value); });
+  }
+  var wanted = new URLSearchParams(location.search).get('cabana');
+  if (wanted) setCabin(wanted);
+  else { var first = selectedCabin(); if (first) S.cabin = first.name; }
+  render();
 })();
