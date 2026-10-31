@@ -9,7 +9,7 @@ const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('Â
 <header class="site-header">
   <nav class="nav" aria-label="Main">
     <a href={`${home}#top`} class="brand" aria-label={`${site.name}, volver arriba`}>
-      <img class="brand__logo" src={url('images/logo.png')} alt={site.name} width="86" height="44">
+      <img class="brand__logo" src={url('images/logo.png')} alt={site.name} width="108" height="55">
       <span class="brand__place">{site.place.toUpperCase()}</span>
     </a>
 
@@ -43,8 +43,8 @@ const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('Â
 </a>
 
 <style>
-  .brand__logo { height: 44px; width: auto; display: block; }
-  @media (max-width: 560px) { .brand__logo { height: 38px; } }
+  .brand__logo { height: 55px; width: auto; display: block; }
+@media (max-width: 560px) { .brand__logo { height: 48px; } }
 
   /* =========================================================
      ESTILOS DEL BOTÃ“N VERDE ESCRITORIO
