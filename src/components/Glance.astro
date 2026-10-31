@@ -1,0 +1,34 @@
+---
+import { site } from '../config';
+---
+<section class="glance" aria-label="At a glance">
+  <div class="glance__pair">
+    <div class="card reveal">
+      <div class="card__head label"><span>Hora local · {site.city}</span><i class="ph ph-clock" aria-hidden="true"></i></div>
+      <div class="card__big" id="clockTime">--:--</div>
+      <div class="card__sub" id="clockDate">&nbsp;</div>
+    </div>
+    <div class="card reveal">
+      <div class="card__head label"><span>Clima · {site.city}</span><i class="ph ph-cloud-sun" aria-hidden="true"></i></div>
+      <div class="card__big" id="temp">--°</div>
+      <div class="card__sub" id="weatherLine">Cargando clima...</div>
+    </div>
+  </div>
+  <div class="glance__pair">
+    <div class="card reveal">
+      <div class="card__head label"><span>Horarios</span><i class="ph ph-key" aria-hidden="true"></i></div>
+      <dl class="rows" style="margin:0">
+        <div><dt>Llegada</dt><dd>Desde las 10:00 AM</dd></div>
+        <div><dt>Salida</dt><dd>Hasta la 1:00 PM</dd></div>
+      </dl>
+    </div>
+    <div class="card reveal">
+      <div class="card__head label"><span>Cómo llegar</span><i class="ph ph-car" aria-hidden="true"></i></div>
+      <dl class="rows" style="margin:0">
+        <div><dt>Saltillo</dt><dd>~80 min</dd></div>
+        <div><dt>Monterrey</dt><dd>~2 hrs</dd></div>
+        <div><dt>Centro Arteaga</dt><dd>~15 min</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>

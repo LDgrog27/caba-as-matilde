@@ -1,0 +1,38 @@
+---
+import { site } from '../config';
+
+const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('¡Hola! Quiero reservar directo en Cabañas Matilde. ¿Me pasan disponibilidad y precios?')}`;
+---
+<section id="direct" class="section">
+  <div class="direct force-dark reveal">
+    <div class="direct__top">
+      <div>
+        <div class="kicker kicker--plain">Ventajas de reservar directo</div>
+        <h2 class="h2">¿Por qué reservar con nosotros?</h2>
+      </div>
+      <div class="direct__aside">
+        <p>Sin comisiones de plataformas, con atención personalizada y la mejor tarifa garantizada para tu escapada a la sierra.</p>
+        
+        <!-- Botón idéntico al original, solo cambia el texto y el link -->
+        <a href={waUrl} class="btn btn--blush" target="_blank" style="width: max-content !important; align-self: flex-start !important;">
+          Reservar ahora <i class="ph ph-arrow-right" aria-hidden="true"></i>
+        </a>
+        
+      </div>
+    </div>
+    <div class="benefits">
+      <div class="benefit">
+        <div class="icon-tile"><i class="ph ph-seal-check" aria-hidden="true"></i></div>
+        <div><h3>Mejor precio</h3><p>Sin intermediarios, obtenés la tarifa más baja disponible.</p></div>
+      </div>
+      <div class="benefit">
+        <div class="icon-tile"><i class="ph ph-phone-call" aria-hidden="true"></i></div>
+        <div><h3>Atención personal</h3><p>Hablás directo con los dueños antes de llegar.</p></div>
+      </div>
+      <div class="benefit">
+        <div class="icon-tile"><i class="ph ph-map-pin" aria-hidden="true"></i></div>
+        <div><h3>Ubicación privilegiada</h3><p>En el corazón de la Sierra de Arteaga.</p></div>
+      </div>
+    </div>
+  </div>
+</section>

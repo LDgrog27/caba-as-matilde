@@ -1,0 +1,84 @@
+---
+import { site } from '../config';
+import Emblem from './Emblem.astro';
+
+const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent('¡Hola! Quiero consultar por disponibilidad en Cabañas Matilde.')}`;
+---
+<footer class="footer">
+  <div class="footer__cols">
+    
+    <!-- Columna 1: Logo y descripción -->
+    <div class="footer__col">
+      <Emblem size="footer" />
+      <p>Un refugio familiar en {site.place}, {site.city}.</p>
+    </div>
+
+    <!-- Columna 2: Navegación -->
+    <div class="footer__col">
+      <span class="label">Explorar</span>
+      <a href="#rooms">Cabañas</a>
+      <a href="#location">Ubicación</a>
+      <a href="#direct">Reserva directa</a>
+    </div>
+
+    <!-- Columna 3: Horarios -->
+    <div class="footer__col">
+      <span class="label">Estadía</span>
+      <span>Llegada a partir de las 10:00 AM</span>
+      <span>Salida hasta la 1:00 PM</span>
+    </div>
+
+    <!-- Columna 4: Dudas / Botón original -->
+    <div class="footer__col">
+      <span class="label">¿Dudas?</span>
+      <a href={waUrl} target="_blank" class="btn btn--outline">
+     Contactanos <i class="ph ph-chat-circle" aria-hidden="true"></i>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Copyright con Capricorn Dev al lado -->
+  <div class="footer__copy">
+    <span>© {new Date().getFullYear()} {site.name} · Todos los derechos reservados</span>
+    <span class="dev-separator">·</span>
+    <span>Desarrollado por <a href="https://capricorndev.netlify.app/" target="_blank" rel="noopener noreferrer" class="dev-link">♑ Capricorn Dev</a></span>
+  </div>
+</footer>
+
+<style>
+  /* 1. Forzamos al contenedor del copyright a comportarse como una fila ordenada */
+  .footer__copy {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding-bottom: 80px !important; 
+    text-align: center !important;
+  }
+
+  /* 2. Estilo para el enlace de Capricorn Dev */
+  .dev-link {
+    color: var(--kicker2);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+  }
+  
+  .dev-link:hover {
+    color: var(--ink);
+    text-shadow: 0 0 8px rgba(242, 184, 164, 0.4);
+  }
+
+  /* 3. Ocultamos el punto separador en celulares */
+  @media (max-width: 600px) {
+    .footer__copy {
+      flex-direction: column !important;
+      gap: 4px !important;
+    }
+    .dev-separator {
+      display: none !important;
+    }
+  }
+</style>

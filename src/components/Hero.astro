@@ -1,0 +1,210 @@
+---
+import { site } from '../config';
+---
+<section id="top" class="hero-wrap">
+  <div class="hero force-dark">
+    <picture class="hero__img">
+      <img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1600&h=1068&q=75" srcset="https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=800&h=534&q=75 800w, https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1200&h=801&q=75 1200w, https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1600&h=1068&q=75 1600w" sizes="100vw" alt="Cabaña en la Sierra de Arteaga" width="1600" height="1068" fetchpriority="high">
+    </picture>
+    <div class="hero__shade"></div>
+    <div class="hero__content">
+      <div class="kicker">Cabañas rústicas · {site.city}</div>
+      <h1>Desconecta de la rutina, <span class="grad-text">conéctate con la sierra.</span></h1>
+      <p class="hero__sub">A 80 min de Saltillo y 2 hrs de Monterrey. El refugio perfecto para familias y grupos en la Sierra de Arteaga.</p>
+      <div class="hero__ctas">
+        <a href="#book" class="btn btn--primary">Reservar ahora <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+        <a href="#rooms" class="btn btn--glass">Conocer cabañas</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Booking bar ============ -->
+  <form id="book" class="booking" autocomplete="off" aria-label="Reservar">
+    <div class="booking__backdrop" id="bookingBackdrop" hidden></div>
+    <div class="booking__bar">
+      
+      <!-- 1. BOTÓN DE CABAÑA -->
+      <button type="button" class="cell" data-open="cabin" aria-haspopup="dialog" aria-expanded="false" aria-controls="cabinPop">
+        <span class="label">Cabaña</span>
+        <span class="cell__value">
+          <i class="ph ph-house" aria-hidden="true"></i>
+          <span class="truncate" id="cabinLabel">Casa Águila</span>
+          <i class="ph ph-caret-down caret" aria-hidden="true"></i>
+        </span>
+      </button>
+
+      <button type="button" class="cell" data-open="in" aria-haspopup="dialog" aria-expanded="false" aria-controls="calPop">
+        <span class="label">Llegada</span>
+        <span class="cell__value"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span id="inLabel">Elegir fecha</span></span>
+      </button>
+      <button type="button" class="cell" data-open="out" aria-haspopup="dialog" aria-expanded="false" aria-controls="calPop">
+        <span class="label">Salida</span>
+        <span class="cell__value"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span id="outLabel">Elegir fecha</span></span>
+      </button>
+      <button type="button" class="cell" data-open="guests" aria-haspopup="dialog" aria-expanded="false" aria-controls="guestPop">
+        <span class="label">Huéspedes</span>
+        <span class="cell__value">
+          <i class="ph ph-users" aria-hidden="true"></i>
+          <span class="truncate" id="guestLabel">2 adultos</span>
+          <i class="ph ph-paw-print" id="petIcon" title="Viaja con mascotas" hidden></i>
+          <i class="ph ph-caret-down caret" aria-hidden="true"></i>
+        </span>
+      </button>
+      <button type="submit" class="cell--go">Ver disponibilidad <i class="ph ph-magnifying-glass" aria-hidden="true"></i></button>
+    </div>
+
+    <!-- Selector oculto para main.js -->
+    <select id="cabinSelect" style="display: none;">
+      <option value="casa-aguila" data-name="Casa Águila" data-price1="4000" data-price2="7500" data-pricex="3500" selected>Casa Águila</option>
+      <option value="casa-oso" data-name="Casa Oso" data-price1="2500" data-price2="4500" data-pricex="2000">Casa Oso</option>
+      <option value="casa-venado" data-name="Casa Venado" data-price1="2500" data-price2="4500" data-pricex="2000">Casa Venado</option>
+      <option value="casa-lince" data-name="Casa Lince" data-price1="3500" data-price2="6500" data-pricex="3000">Casa Lince</option>
+      <option value="casa-5" data-name="Casa 5" data-price1="3500" data-price2="6500" data-pricex="3000">Casa 5</option>
+    </select>
+
+    <!-- 2. POPOVER DE CABAÑAS -->
+    <div class="popover" id="cabinPop" role="dialog" aria-label="Elegir cabaña" hidden>
+      <div class="cabin-options-wrapper">
+        <button type="button" class="cabin-option is-selected" data-value="casa-aguila" data-name="Casa Águila">
+          <span class="cabin-name">Casa Águila</span>
+          <span class="cabin-cap"> ( 14 personas )</span>
+        </button>
+        <button type="button" class="cabin-option" data-value="casa-oso" data-name="Casa Oso">
+          <span class="cabin-name">Casa Oso</span>
+          <span class="cabin-cap"> ( 6 personas ) </span>
+        </button>
+        <button type="button" class="cabin-option" data-value="casa-venado" data-name="Casa Venado">
+          <span class="cabin-name">Casa Venado</span>
+          <span class="cabin-cap"> ( 6 personas ) </span>
+        </button>
+        <button type="button" class="cabin-option" data-value="casa-lince" data-name="Casa Lince">
+          <span class="cabin-name">Casa Lince</span>
+          <span class="cabin-cap"> ( 10 personas ) </span>
+        </button>
+        <button type="button" class="cabin-option" data-value="casa-5" data-name="Casa 5">
+          <span class="cabin-name">Casa 5</span>
+          <span class="cabin-cap"> ( 10 personas ) </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- COTIZADOR EN VIVO -->
+    <div id="livePriceDisplay" class="live-price" style="display: none;">
+      <div class="live-price__row">
+        <span>Total estimado:</span>
+        <strong id="totalPrice">$0 MXN</strong>
+      </div>
+      <div class="live-price__row live-price__row--sub">
+        <span>Adelanto requerido (30%):</span>
+        <strong id="depositPrice">$0 MXN</strong>
+      </div>
+    </div>
+
+    <!-- Calendar popover -->
+    <div class="popover" id="calPop" role="dialog" aria-label="Elegir fechas" hidden>
+      <div class="cal__head">
+        <button type="button" class="round-btn" id="prevMonth" aria-label="Mes anterior"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+        <span class="cal__month" id="monthLabel" aria-live="polite"></span>
+        <button type="button" class="round-btn" id="nextMonth" aria-label="Mes siguiente"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+      </div>
+      <div class="cal__week" aria-hidden="true"><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span></div>
+      <div class="cal__grid" id="calGrid"></div>
+      <div class="cal__foot">
+        <span class="cal__hint" id="calHint">Seleccioná llegada</span>
+        <button type="button" class="link-btn" id="clearDates">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- Guests popover -->
+    <div class="popover" id="guestPop" role="dialog" aria-label="Elegir huéspedes" hidden>
+      <div class="g-row">
+        <div class="g-row__text"><span class="g-row__label">Adultos</span><span class="g-row__sub">13+ años</span></div>
+        <div class="stepper">
+          <button type="button" class="round-btn round-btn--accent" data-step="adults" data-by="-1" aria-label="Menos adultos"><i class="ph ph-minus" aria-hidden="true"></i></button>
+          <output id="adultsOut" aria-live="polite">2</output>
+          <button type="button" class="round-btn round-btn--accent" data-step="adults" data-by="1" aria-label="Más adultos"><i class="ph ph-plus" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="g-row">
+        <div class="g-row__text"><span class="g-row__label">Niños</span><span class="g-row__sub">0–12 años</span></div>
+        <div class="stepper">
+          <button type="button" class="round-btn round-btn--accent" data-step="children" data-by="-1" aria-label="Menos niños"><i class="ph ph-minus" aria-hidden="true"></i></button>
+          <output id="childrenOut" aria-live="polite">0</output>
+          <button type="button" class="round-btn round-btn--accent" data-step="children" data-by="1" aria-label="Más niños"><i class="ph ph-plus" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <button type="button" class="g-row g-row--check" id="petsToggle" role="checkbox" aria-checked="false">
+        <span class="g-row__text"><span class="g-row__label">Viaja con mascotas</span><span class="g-row__sub">Avísenos con anticipación</span></span>
+        <span class="checkbox"><i class="ph-bold ph-check" aria-hidden="true"></i></span>
+      </button>
+      <button type="button" class="done-btn" id="guestsDone">Listo</button>
+    </div>
+  </form>
+</section>
+
+<style>
+  /* Estilos para el menú de cabañas */
+  .cabin-options-wrapper {
+    display: grid;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .cabin-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 12px 16px;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .cabin-name {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .cabin-cap {
+    font-size: 12px;
+    color: var(--kicker);
+    background: rgba(218, 83, 44, 0.15);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .cabin-option:hover {
+    background: rgba(var(--ink-rgb), 0.08);
+  }
+  
+  .cabin-option.is-selected {
+    background: rgba(218, 83, 44, 0.12);
+    border-color: rgba(218, 83, 44, 0.4);
+  }
+
+  /* Estilos del cotizador */
+  .live-price {
+    background: var(--surface);
+    padding: 1rem 1.5rem;
+    border-radius: 0 0 1rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    margin-top: -5px;
+    position: relative;
+    z-index: 5;
+  }
+  .live-price__row { display: flex; gap: 0.5rem; align-items: baseline; }
+  .live-price strong { font-size: 1.2rem; color: var(--accent); }
+  .live-price__row--sub strong { font-size: 1rem; color: var(--text-main); }
+  @media (max-width: 600px) {
+    .live-price { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  }
+</style>
