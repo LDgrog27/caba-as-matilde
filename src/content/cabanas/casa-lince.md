@@ -7,10 +7,10 @@ precio2Noches: 6500
 precioNocheExtra: 3000
 # Fotos: súbelas a public/images/ con estos nombres (o cambia las rutas). Mientras no existan se muestra una ilustración provisional.
 imagenes:
-  - "/images/casa-lince-1.jpg"
-  - "/images/casa-lince-2.jpg"
-  - "/images/casa-lince-3.jpg"
-  - "/images/casa-lince-4.jpg"
+  - "/images/casa-lince-matilde.jpg"
+  - "/images/tasa-matilde.jpg"
+  - "/images/rosal-matilde.jpg"
+  - "/images/camioneta-matilde.jpg"
 # PENDIENTE: completar con los datos reales de esta cabaña.
 resumen: "Hasta 10 personas."
 # titular: "Frase de venta de la cabaña"

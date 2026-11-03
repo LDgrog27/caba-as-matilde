@@ -8,8 +8,10 @@ precio1Noche: 4000
 precio2Noches: 7500
 precioNocheExtra: 3500
 imagenes:
-  - "/images/casa-aguila-1.jpg"
-  - "/images/casa-aguila-2.jpg"
+  - "/images/comedor-aguila-matilde.jpg"
+  - "/images/habitacion-aguila-matilde.jpg"
+  - "/images/bracero-matilde.jpg"
+  - "/images/carpa-matilde.jpg"
 amenidades:
   - "2 recámaras arriba, 1 abajo (2 camas matrimoniales y resto individuales)"
   - "Cocina equipada (estufa sin horno, utensilios básicos)"
