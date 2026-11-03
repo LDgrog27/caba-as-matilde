@@ -32,7 +32,8 @@ const varias = imagenes.length > 1;
         aria-label={`${i + 1} de ${imagenes.length}`}
         aria-hidden={i === 0 ? 'false' : 'true'}
       >
-        <img src={im.src} alt={im.alt} width="1600" height="1068" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} draggable="false">
+        <img class="carousel__bg" src={im.src} alt="" aria-hidden="true" loading="lazy" draggable="false">
+        <img class="carousel__fg" src={im.src} alt={im.alt} width="1600" height="1068" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} draggable="false">
       </div>
     ))}
   </div>
@@ -60,6 +61,21 @@ const varias = imagenes.length > 1;
 <script>
   document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
     const slides = Array.from(root.querySelectorAll<HTMLElement>('.carousel__slide'));
+
+    /* Las fotos casi cuadradas, verticales o de poca resolución (típicas del celular) se
+       verían recortadas y pixeladas si se estiran a todo el ancho. Esas se muestran enteras,
+       a la derecha, sobre un fondo difuminado de la misma foto. */
+    slides.forEach((slide) => {
+      const img = slide.querySelector<HTMLImageElement>('.carousel__fg');
+      if (!img) return;
+      const check = () => {
+        if (!img.naturalWidth) return;
+        const ratio = img.naturalWidth / img.naturalHeight;
+        slide.classList.toggle('is-fit', ratio < 1.55 || img.naturalWidth < 1200);
+      };
+      if (img.complete) check(); else img.addEventListener('load', check, { once: true });
+    });
+
     if (slides.length < 2) return;
     const dots = Array.from(root.querySelectorAll<HTMLElement>('.carousel__dot'));
     const count = root.querySelector<HTMLElement>('[data-count]');
@@ -141,9 +157,18 @@ const varias = imagenes.length > 1;
     transition: opacity .9s ease, visibility 0s linear .9s;
   }
   .carousel__slide.is-active { opacity: 1; visibility: visible; transition: opacity .9s ease; }
-  .carousel__slide img { width: 100%; height: 100%; object-fit: cover; }
-  .carousel__slide.is-active img { animation: carousel-zoom 9s ease-out both; }
-  @keyframes carousel-zoom { from { transform: scale(1.06); } to { transform: scale(1); } }
+  .carousel__fg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .carousel__bg { display: none; position: absolute; inset: -6%; width: 112%; height: 112%; object-fit: cover; filter: blur(30px) brightness(.75) saturate(1.1); }
+  .carousel__slide.is-active:not(.is-fit) .carousel__fg { animation: carousel-zoom 9s ease-out both; }
+  @keyframes carousel-zoom { from { transform: scale(1.03); } to { transform: scale(1); } }
+
+  /* Foto entera (sin zoom ni recorte), a la derecha; el texto queda a la izquierda */
+  .carousel__slide.is-fit .carousel__bg { display: block; }
+  .carousel__slide.is-fit .carousel__fg {
+    box-sizing: border-box; padding: 28px 44px 84px 28px;
+    object-fit: contain; object-position: right center;
+  }
+  @media (max-width: 860px) { .carousel__slide.is-fit .carousel__fg { padding: 20px 20px 84px; object-position: center; } }
 
   /* Controles: abajo a la derecha, por encima del degradado */
   .carousel__ui {
@@ -178,7 +203,7 @@ const varias = imagenes.length > 1;
 
   @media (prefers-reduced-motion: reduce) {
     .carousel__slide { transition: none; }
-    .carousel__slide.is-active img { animation: none; }
+    .carousel__slide.is-active .carousel__fg { animation: none; }
     .carousel__dot.is-active::after { animation: none; transform: scaleX(1); }
   }
   @media (max-width: 560px) {
