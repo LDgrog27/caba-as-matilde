@@ -2,12 +2,12 @@
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Header from '../../components/Header.astro';
-import Carrusel from '../../components/Carrusel.astro';
+import GaleriaCabana from '../../components/GaleriaCabana.astro';
 import Stories from '../../components/Stories.astro';
 import MapaPreview from '../../components/MapaPreview.astro';
 import Footer from '../../components/Footer.astro';
 import { cabanasActivas, imagenesDe, precioExtraDe, mxnCorto } from '../../lib/cabanas';
-import { incluyeTodas, horarios, adelantoPct } from '../../data/propiedad';
+import { incluyeTodas, horarios, adelantoPct, queLlevarComun, noIncluyeComun, reglamentoComun } from '../../data/propiedad';
 import { site, ubicacion, rutaUrl, mapaUrl } from '../../config';
 import { url } from '../../lib/url';
 
@@ -31,9 +31,9 @@ const extra = precioExtraDe(cabana);
 const cotizarUrl = `${url()}?cabana=${cabana.id}#book`;
 const waUrl = `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent(`¡Hola! Me interesa ${d.nombre} en Cabañas Matilde. ¿Qué fechas tienen disponibles?`)}`;
 const listas = [
-  { titulo: 'Qué llevar', icono: 'backpack', items: d.queLlevar },
-  { titulo: 'Qué no incluye', icono: 'prohibit', items: d.noIncluye },
-  { titulo: 'Reglamento', icono: 'scroll', items: d.reglamento },
+  { titulo: 'Qué llevar', icono: 'backpack', items: d.queLlevar.length ? d.queLlevar : queLlevarComun },
+  { titulo: 'Qué no incluye', icono: 'prohibit', items: d.noIncluye.length ? d.noIncluye : noIncluyeComun },
+  { titulo: 'Reglamento', icono: 'scroll', items: d.reglamento.length ? d.reglamento : reglamentoComun },
 ].filter((l) => l.items.length);
 ---
 <Base
@@ -45,7 +45,7 @@ const listas = [
   <main>
     <!-- ============ 1. Carrusel automático ============ -->
     <section id="top" class="hero-wrap">
-      <Carrusel imagenes={imagenes} etiqueta={`Fotos de ${d.nombre}`}>
+      <GaleriaCabana imagenes={imagenes} etiqueta={`Fotos de ${d.nombre}`}>
         <div class="hero__content">
           <div class="kicker">Cabañas Matilde · Hasta {d.capacidadMax} personas</div>
           <h1>{d.nombre}</h1>
@@ -55,7 +55,7 @@ const listas = [
             <a href={waUrl} class="btn btn--glass" target="_blank" rel="noopener">Preguntar por WhatsApp <i class="ph ph-whatsapp-logo" aria-hidden="true"></i></a>
           </div>
         </div>
-      </Carrusel>
+      </GaleriaCabana>
       {imagenes[0].provisional && <p class="provisional">Fotos de ejemplo: pronto subiremos las fotos reales de {d.nombre}.</p>}
     </section>
 

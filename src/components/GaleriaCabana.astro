@@ -1,0 +1,250 @@
+---
+/**
+ * Galería de la cabaña: una foto principal grande y, al costado, las que siguen
+ * (en pequeño). Cada cierto tiempo la siguiente "crece" y pasa a ser la principal;
+ * también se puede tocar cualquier foto pequeña o usar las flechas.
+ * - Se detiene al pasar el mouse, al enfocar un control, con la pestaña oculta
+ *   y si el visitante prefiere menos movimiento.
+ * - En celular la principal va arriba y las siguientes en una fila debajo.
+ * El contenido del <slot> (título, botones) se dibuja sobre la foto principal.
+ */
+interface Props {
+  imagenes: { src: string; alt: string }[];
+  intervalo?: number;
+  etiqueta?: string;
+}
+const { imagenes, intervalo = 5000, etiqueta = 'Fotos de la cabaña' } = Astro.props;
+const n = imagenes.length;
+const varias = n > 1;
+const miniaturas = Math.min(n - 1, 3); // cuántas fotos pequeñas se ven al costado
+---
+<div
+  class:list={['gal', { 'gal--solo': !varias }]}
+  style={`--t:${Math.max(miniaturas, 1)}; --interval:${intervalo}ms`}
+  data-gal
+  data-interval={intervalo}
+  role="region"
+  aria-roledescription="carrusel"
+  aria-label={etiqueta}
+>
+  {imagenes.map((im, i) => (
+    <div class="gal__item" data-pos={i} aria-hidden={i === 0 ? 'false' : 'true'}>
+      <img
+        src={im.src}
+        alt={im.alt}
+        width="1600"
+        height="1068"
+        loading={i < 4 ? 'eager' : 'lazy'}
+        fetchpriority={i === 0 ? 'high' : undefined}
+        draggable="false"
+      >
+      {varias && <button type="button" class="gal__hit" data-go={i} aria-label={`Ver foto ${i + 1} de ${n}`}></button>}
+    </div>
+  ))}
+
+  <!-- Contenido sobre la foto principal -->
+  <div class="hero force-dark gal__overlay">
+    <div class="hero__shade"></div>
+    <slot />
+    {varias && (
+      <>
+        <div class="gal__ui">
+          <span class="gal__count" data-count aria-hidden="true">1 / {n}</span>
+          <button type="button" class="round-btn gal__btn" data-pause aria-label="Pausar el carrusel"><i class="ph ph-pause" aria-hidden="true"></i></button>
+          <button type="button" class="round-btn gal__btn" data-prev aria-label="Foto anterior"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+          <button type="button" class="round-btn gal__btn" data-next aria-label="Foto siguiente"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+        </div>
+        <div class="gal__progress" aria-hidden="true"><span data-bar></span></div>
+      </>
+    )}
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-gal]').forEach((root) => {
+    const items = Array.from(root.querySelectorAll<HTMLElement>('.gal__item'));
+    const n = items.length;
+    if (n < 2) return;
+    const count = root.querySelector<HTMLElement>('[data-count]');
+    const pauseBtn = root.querySelector<HTMLButtonElement>('[data-pause]');
+    const bar = root.querySelector<HTMLElement>('[data-bar]');
+    const interval = Number(root.dataset.interval) || 5000;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let cur = 0;
+    let timer: number | undefined;
+    let userPaused = reduce;
+    let hovering = false;
+
+    const running = () => !userPaused && !hovering && !document.hidden;
+
+    function schedule() {
+      window.clearTimeout(timer);
+      root.classList.toggle('is-paused', !running());
+      if (bar) { // reinicia la barra de progreso
+        bar.style.animation = 'none';
+        void bar.offsetWidth;
+        bar.style.animation = '';
+      }
+      if (running()) timer = window.setTimeout(() => go(cur + 1), interval);
+    }
+
+    /* Mueve las fotos con la técnica FLIP: mide dónde estaban, las reubica
+       y anima desde la posición anterior hasta la nueva. */
+    function go(next: number, animate = true) {
+      const to = ((next % n) + n) % n;
+      if (to === cur) { schedule(); return; }
+      const antes = items.map((el) => el.getBoundingClientRect());
+      cur = to;
+      items.forEach((el, i) => {
+        const pos = (i - cur + n) % n;
+        el.dataset.pos = String(pos);
+        el.setAttribute('aria-hidden', String(pos !== 0));
+      });
+      if (count) count.textContent = `${cur + 1} / ${n}`;
+
+      if (animate && !reduce) {
+        items.forEach((el, i) => {
+          const a = antes[i];
+          const d = el.getBoundingClientRect();
+          if (d.width === 0) return;                  // queda oculta
+          if (a.width === 0) {                        // aparece
+            el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, easing: 'ease-out' });
+            return;
+          }
+          const esPrincipal = el.dataset.pos === '0';
+          el.style.zIndex = esPrincipal ? '3' : '2';
+          const anim = el.animate(
+            [
+              { transformOrigin: 'top left', transform: `translate(${a.left - d.left}px, ${a.top - d.top}px) scale(${a.width / d.width}, ${a.height / d.height})` },
+              { transformOrigin: 'top left', transform: 'none' },
+            ],
+            { duration: 700, easing: 'cubic-bezier(.22,.75,.2,1)' },
+          );
+          anim.onfinish = () => { el.style.zIndex = ''; };
+        });
+      }
+      schedule();
+    }
+
+    function syncPauseBtn() {
+      if (!pauseBtn) return;
+      pauseBtn.innerHTML = `<i class="ph ph-${userPaused ? 'play' : 'pause'}" aria-hidden="true"></i>`;
+      pauseBtn.setAttribute('aria-label', userPaused ? 'Reanudar el carrusel' : 'Pausar el carrusel');
+    }
+
+    root.querySelector('[data-prev]')?.addEventListener('click', () => go(cur - 1));
+    root.querySelector('[data-next]')?.addEventListener('click', () => go(cur + 1));
+    root.querySelectorAll<HTMLElement>('[data-go]').forEach((b) =>
+      b.addEventListener('click', () => go(Number(b.dataset.go))),
+    );
+    pauseBtn?.addEventListener('click', () => { userPaused = !userPaused; syncPauseBtn(); schedule(); });
+
+    root.addEventListener('mouseenter', () => { hovering = true; schedule(); });
+    root.addEventListener('mouseleave', () => { hovering = false; schedule(); });
+    root.addEventListener('focusin', () => { hovering = true; schedule(); });
+    root.addEventListener('focusout', () => { hovering = false; schedule(); });
+    document.addEventListener('visibilitychange', schedule);
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); }
+    });
+
+    // Deslizar con el dedo
+    let startX = 0, startY = 0, tracking = false;
+    root.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' || (e.target as HTMLElement).closest('a,button')) return;
+      tracking = true; startX = e.clientX; startY = e.clientY;
+    });
+    root.addEventListener('pointerup', (e) => {
+      if (!tracking) return;
+      tracking = false;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(cur + (dx < 0 ? 1 : -1));
+    });
+    root.addEventListener('pointercancel', () => { tracking = false; });
+
+    syncPauseBtn();
+    schedule();
+  });
+</script>
+
+<style>
+  .gal {
+    position: relative;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) clamp(150px, 21vw, 260px);
+    grid-template-rows: repeat(var(--t), minmax(0, 1fr));
+    min-height: clamp(520px, 78vh, 740px);
+  }
+  .gal--solo { grid-template-columns: minmax(0, 1fr); }
+
+  /* Cada foto: la posición 0 es la principal, 1-3 las que siguen */
+  .gal__item {
+    position: relative; overflow: hidden; border-radius: 18px;
+    background: var(--card); border: 1px solid rgba(var(--ink-rgb), .08);
+    grid-column: 2;
+  }
+  .gal__item img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .gal__item[data-pos="0"] { grid-column: 1; grid-row: 1 / span var(--t); border-radius: 28px; }
+  .gal__item[data-pos="1"] { grid-row: 1; }
+  .gal__item[data-pos="2"] { grid-row: 2; }
+  .gal__item[data-pos="3"] { grid-row: 3; }
+  .gal__item:not([data-pos="0"]):not([data-pos="1"]):not([data-pos="2"]):not([data-pos="3"]) { display: none; }
+
+  .gal__hit {
+    position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%;
+    padding: 0; border: 0; background: rgba(20, 12, 14, .18); cursor: pointer;
+    transition: background .25s;
+  }
+  .gal__hit:hover { background: rgba(20, 12, 14, 0); }
+  .gal__item[data-pos="0"] .gal__hit { display: none; }
+
+  /* Contenido (título, botones) sobre la foto principal */
+  .gal__overlay {
+    grid-column: 1; grid-row: 1 / span var(--t); z-index: 4;
+    min-height: 0; border: 0; border-radius: 28px; background: none; pointer-events: none;
+  }
+  .gal__overlay :global(a), .gal__overlay :global(button) { pointer-events: auto; }
+  .gal__overlay :global(.hero__content) { padding-bottom: clamp(28px, 5vw, 64px); }
+
+  .gal__ui {
+    position: absolute; z-index: 2; top: 18px; right: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .gal__count { font-size: 12px; letter-spacing: .12em; color: rgba(var(--ink-rgb), .8); margin-right: 6px; font-variant-numeric: tabular-nums; }
+  .gal__btn {
+    width: 40px; height: 40px;
+    background: rgba(20, 12, 14, .4); border-color: rgba(var(--ink-rgb), .3);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .gal__progress { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(var(--ink-rgb), .18); }
+  .gal__progress span {
+    display: block; height: 100%; background: var(--ink);
+    transform-origin: left; transform: scaleX(0);
+    animation: gal-fill var(--interval, 5000ms) linear forwards;
+  }
+  .gal.is-paused .gal__progress span { animation-play-state: paused; }
+  @keyframes gal-fill { to { transform: scaleX(1); } }
+
+  @media (max-width: 760px) {
+    .gal {
+      grid-template-columns: repeat(var(--t), minmax(0, 1fr));
+      grid-template-rows: minmax(500px, 72vh) 92px;
+      min-height: 0; gap: 8px;
+    }
+    .gal--solo { grid-template-rows: minmax(500px, 72vh); }
+    .gal__item { grid-row: 2; border-radius: 14px; }
+    .gal__item[data-pos="0"] { grid-column: 1 / span var(--t); grid-row: 1; }
+    .gal__item[data-pos="1"] { grid-column: 1; grid-row: 2; }
+    .gal__item[data-pos="2"] { grid-column: 2; grid-row: 2; }
+    .gal__item[data-pos="3"] { grid-column: 3; grid-row: 2; }
+    .gal__overlay { grid-column: 1 / span var(--t); grid-row: 1; }
+    .gal__count { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gal__progress span { animation: none; transform: scaleX(1); }
+  }
+</style>
