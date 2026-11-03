@@ -71,6 +71,9 @@ const miniaturas = Math.min(n - 1, 3); // cuántas fotos pequeñas se ven al cos
     const interval = Number(root.dataset.interval) || 5000;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // FIX móvil: el mismo breakpoint que usa el CSS (760px)
+    const esMovil = () => window.matchMedia('(max-width: 760px)').matches;
+
     let cur = 0;
     let timer: number | undefined;
     let userPaused = reduce;
@@ -90,7 +93,11 @@ const miniaturas = Math.min(n - 1, 3); // cuántas fotos pequeñas se ven al cos
     }
 
     /* Mueve las fotos con la técnica FLIP: mide dónde estaban, las reubica
-       y anima desde la posición anterior hasta la nueva. */
+       y anima desde la posición anterior hasta la nueva.
+
+       FIX móvil: en pantallas pequeñas el grid cambia de columnas a filas y el
+       FLIP provoca un reajuste de scroll que se percibe como "salto hacia abajo".
+       En ese caso usamos solo un fade corto entre la foto vieja y la nueva. */
     function go(next: number, animate = true) {
       const to = ((next % n) + n) % n;
       if (to === cur) { schedule(); return; }
@@ -103,7 +110,10 @@ const miniaturas = Math.min(n - 1, 3); // cuántas fotos pequeñas se ven al cos
       });
       if (count) count.textContent = `${cur + 1} / ${n}`;
 
-      if (animate && !reduce) {
+      const enMovil = esMovil();
+
+      if (animate && !reduce && !enMovil) {
+        // Escritorio: FLIP completo (crece/encoge + reposiciona)
         items.forEach((el, i) => {
           const a = antes[i];
           const d = el.getBoundingClientRect();
@@ -122,6 +132,16 @@ const miniaturas = Math.min(n - 1, 3); // cuántas fotos pequeñas se ven al cos
             { duration: 700, easing: 'cubic-bezier(.22,.75,.2,1)' },
           );
           anim.onfinish = () => { el.style.zIndex = ''; };
+        });
+      } else if (animate && !reduce && enMovil) {
+        // Móvil: solo fade. Nada de transform/scale para no alterar el scroll.
+        items.forEach((el) => {
+          if (el.dataset.pos === '0') {
+            el.animate(
+              [{ opacity: 0.2 }, { opacity: 1 }],
+              { duration: 320, easing: 'ease-out' },
+            );
+          }
         });
       }
       schedule();
@@ -177,6 +197,8 @@ const miniaturas = Math.min(n - 1, 3); // cuántas fotos pequeñas se ven al cos
     grid-template-columns: minmax(0, 1fr) clamp(150px, 21vw, 260px);
     grid-template-rows: repeat(var(--t), minmax(0, 1fr));
     min-height: clamp(520px, 78vh, 740px);
+    /* FIX móvil: evita que el navegador "ancle" el scroll cuando cambia el layout */
+    overflow-anchor: none;
   }
   .gal--solo { grid-template-columns: minmax(0, 1fr); }
 
