@@ -1,5 +1,5 @@
 ---
-nombre: "Casa 5"
+nombre: "Casa Colibrí"
 orden: 5
 capacidadMax: 10
 precio1Noche: 3500
@@ -7,8 +7,8 @@ precio2Noches: 6500
 precioNocheExtra: 3000
 # Fotos: súbelas a public/images/ con estos nombres (o cambia las rutas). Mientras no existan se muestra una ilustración provisional.
 imagenes:
-  - "/images/casa-5-1.jpg"
-  - "/images/casa-5-2.jpg"
+  - "/images/casa-colibri-matilde.jpg"
+  - "/images/habitacion-colibri-exageracion.jpg"
   - "/images/casa-5-3.jpg"
   - "/images/casa-5-4.jpg"
 # PENDIENTE: completar con los datos reales de esta cabaña.

@@ -11,7 +11,7 @@ imagenes:
   - "/images/comedor-aguila-matilde.jpg"
   - "/images/habitacion-aguila-matilde.jpg"
   - "/images/bracero-matilde.jpg"
-  - "/images/carpa-matilde.jpg"
+  - "/images/casa-aguila-interior.jpg"
 amenidades:
   - "2 recámaras arriba, 1 abajo (2 camas matrimoniales y resto individuales)"
   - "Cocina equipada (estufa sin horno, utensilios básicos)"

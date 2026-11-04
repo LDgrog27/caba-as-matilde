@@ -32,8 +32,25 @@ const varias = imagenes.length > 1;
         aria-label={`${i + 1} de ${imagenes.length}`}
         aria-hidden={i === 0 ? 'false' : 'true'}
       >
-        <img class="carousel__bg" src={im.src} alt="" aria-hidden="true" loading="lazy" draggable="false">
-        <img class="carousel__fg" src={im.src} alt={im.alt} width="1600" height="1068" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} draggable="false">
+        <img
+          class="carousel__bg"
+          src={im.src}
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          fetchpriority="low"
+          draggable="false"
+        >
+        <img
+          class="carousel__fg"
+          src={im.src}
+          alt={im.alt}
+          width="1600"
+          height="1068"
+          loading="eager"
+          fetchpriority={i === 0 ? 'high' : 'low'}
+          draggable="false"
+        >
       </div>
     ))}
   </div>
@@ -89,8 +106,26 @@ const varias = imagenes.length > 1;
     let userPaused = reduce;      // con "menos movimiento" arranca en pausa
     let hovering = false;
 
-    function go(n: number) {
-      i = (n + slides.length) % slides.length;
+    /* FIX: esperar a que la imagen destino esté cargada y con `.is-fit` ya aplicado
+       ANTES de iniciar la transición de opacidad. Así el cambio de layout
+       (cover → contain + padding) ocurre con la slide aún invisible, y no se
+       percibe como "salto" a mitad del fade. */
+    async function go(n: number) {
+      const target = (n + slides.length) % slides.length;
+      const targetImg = slides[target].querySelector<HTMLImageElement>('.carousel__fg');
+
+      if (targetImg && !targetImg.complete) {
+        await new Promise<void>((resolve) => {
+          targetImg.addEventListener('load', () => resolve(), { once: true });
+          targetImg.addEventListener('error', () => resolve(), { once: true });
+          // Fallback: no bloquear más de 2s si la red está lenta
+          setTimeout(resolve, 2000);
+        });
+      }
+      // Forzar reflow: el navegador "ve" el layout de la slide destino ya estabilizado
+      void slides[target].offsetWidth;
+
+      i = target;
       slides.forEach((s, k) => {
         s.classList.toggle('is-active', k === i);
         s.setAttribute('aria-hidden', String(k !== i));
@@ -102,6 +137,7 @@ const varias = imagenes.length > 1;
       if (count) count.textContent = `${i + 1} / ${slides.length}`;
       schedule();
     }
+
     function running() { return !userPaused && !hovering && !document.hidden; }
     function schedule() {
       window.clearTimeout(timer);
@@ -209,5 +245,11 @@ const varias = imagenes.length > 1;
   @media (max-width: 560px) {
     .carousel__count { display: none; }
     .carousel__dot { width: 22px; }
+  }
+
+  /* FIX móvil: desactivar el zoom para que no se perciba movimiento vertical
+     al combinar con el cambio de padding que hace `.is-fit` en pantallas pequeñas. */
+  @media (max-width: 860px) {
+    .carousel__slide.is-active:not(.is-fit) .carousel__fg { animation: none; }
   }
 </style>

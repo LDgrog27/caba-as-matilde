@@ -7,7 +7,7 @@ precio2Noches: 4500
 precioNocheExtra: 2000
 # Fotos: súbelas a public/images/ con estos nombres (o cambia las rutas). Mientras no existan se muestra una ilustración provisional.
 imagenes:
-  - "/images/casa-venado-1.jpg"
+  - "/images/casa-venado-matilde.jpg"
   - "/images/casa-venado-2.jpg"
   - "/images/casa-venado-3.jpg"
   - "/images/casa-venado-4.jpg"
